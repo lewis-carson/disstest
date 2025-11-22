@@ -18,6 +18,7 @@ from time import time
 
 import torch
 from trainlog import TrainLog
+import wandb
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -46,6 +47,7 @@ def train(
     train_id: str,
     lr_drop: int | None = None,
     train_log: TrainLog | None = None,
+    use_wandb: bool = False,
 ) -> None:
     clipper = WeightClipper()
     running_loss = torch.zeros((1,), device=DEVICE)
@@ -70,6 +72,15 @@ def train(
                 f"epoch pos/s: {fens / (time() - start_time)}",
                 sep=os.linesep,
             )
+
+            if use_wandb:
+                wandb.log(
+                    {
+                        "epoch": epoch,
+                        "epoch_loss": running_loss.item() / iterations,
+                        "pos_per_s": fens / (time() - start_time),
+                    }
+                )
 
             running_loss = torch.zeros((1,), device=DEVICE)
             start_time = time()
@@ -112,11 +123,16 @@ def train(
             if train_log is not None:
                 train_log.update(loss)
                 train_log.save()
+            
+            if use_wandb:
+                wandb.log({"loss": loss, "global_step": iterations * batch.size})
+
             iter_since_log = 0
             loss_since_log = torch.zeros((1,), device=DEVICE)
 
 
 def main():
+    print(f"Training on {DEVICE}")
 
     parser = argparse.ArgumentParser(description="")
 
@@ -141,17 +157,28 @@ def main():
         default=None,
         help="The epoch learning rate will be dropped",
     )
+    parser.add_argument("--wandb-project", type=str, help="Wandb project name")
+    parser.add_argument("--wandb-entity", type=str, help="Wandb entity name")
+
     args = parser.parse_args()
 
     assert args.train_id is not None
     assert args.scale is not None
+
+    if args.wandb_project:
+        wandb.init(
+            project=args.wandb_project,
+            entity=args.wandb_entity,
+            name=args.train_id,
+            config=vars(args),
+        )
 
     train_log = TrainLog(args.train_id)
 
     model = NnHalfKP(128).to(DEVICE)
 
     data_path = pathlib.Path(args.data_root)
-    paths = list(map(str, data_path.glob("*.binpack")))
+    paths = list(map(str, data_path.rglob("*.binpack")))
     dataloader = BatchLoader(paths, model.input_feature_set(), args.batch_size)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -167,6 +194,7 @@ def main():
         args.train_id,
         lr_drop=args.lr_drop,
         train_log=train_log,
+        use_wandb=args.wandb_project is not None,
     )
 
 
