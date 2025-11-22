@@ -1,0 +1,16 @@
+[package]
+name = "binpack_loader"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "binpack_loader"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+numpy = "0.20"
+rand = "0.8"
+thiserror = "2.0"
+sfbinpack = { path = ".." }

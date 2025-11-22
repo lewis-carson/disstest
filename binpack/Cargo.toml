@@ -1,0 +1,43 @@
+[package]
+name = "sfbinpack"
+version = "0.6.1"
+description = "Library to read Stockfish Binpacks"
+edition = "2021"
+license = "GPL-3.0"
+repository = "https://github.com/Disservin/binpack-rust"
+readme = "README.md"
+
+[features]
+default = []
+
+# Enables the usage of `_pdep_u64` which will make the reader faster on modern hardware.
+# If disabled a fallback procedure is used.
+# This should be enabled on all Intel CPUs, which support BMI2.
+# CPUs from AMD should only enabled this if the architecture is Zen3+.
+bmi2 = []
+
+[dependencies]
+arrayvec = "0.7.6"
+thiserror = "2.0.8"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "sfbinpack"
+path = "src/main.rs"
+
+[profile.release]
+debug = 1
+opt-level = 3
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+lto = true
+panic = 'unwind'
+incremental = false
+codegen-units = 16
+rpath = false
