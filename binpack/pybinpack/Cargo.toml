@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+# PyO3 bindings for the sfbinpack loader
 [lib]
 name = "binpack_loader"
 crate-type = ["cdylib"]

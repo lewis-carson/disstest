@@ -49,6 +49,7 @@ class BatchLoader:
 
         self._files = files
         self._batch_size = batch_size
+        self._feature_set = feature_set
         self._feature_set_name = "HalfKP"
         self._stream = self._create_stream()
 
