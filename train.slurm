@@ -18,6 +18,6 @@ echo "GPU: $(nvidia-smi -L)"
 
 source .venv/bin/activate
 
-python -u marlinflow/trainer/main.py --data-root data/ --train-id test_run --lr 0.001 --epochs 10 --scale 400 --wandb-project marlinflow --wandb-entity torvim
+python -u marlinflow/trainer/main.py --data-root data/ --lr 0.001 --epochs 10 --scale 400 --wandb-project marlinflow --wandb-entity torvim
 
 echo "Training job completed at $(date)"

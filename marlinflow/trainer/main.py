@@ -162,20 +162,23 @@ def main():
 
     args = parser.parse_args()
 
-    assert args.train_id is not None
     assert args.scale is not None
 
     if args.wandb_project:
         wandb.init(
             project=args.wandb_project,
             entity=args.wandb_entity,
-            name=args.train_id,
             config=vars(args),
         )
+        if args.train_id is None:
+            args.train_id = wandb.run.name
+
+    if args.train_id is None:
+        args.train_id = str(int(time()))
 
     train_log = TrainLog(args.train_id)
 
-    model = NnHalfKP(128).to(DEVICE)
+    model = NnHalfKPCuda(128).to(DEVICE)
 
     data_path = pathlib.Path(args.data_root)
     paths = list(map(str, data_path.rglob("*.binpack")))
