@@ -37,26 +37,25 @@ class WeightClipper:
             module.weight.data = w
 
 
-def acpl_to_elo(acpl: float, total_time_sec: float, ref_time_sec: float = 300, alpha: float = 0.4) -> float:
+def acpl_to_elo_ccrl(acpl: float, total_time_sec: float, ref_time_sec: float = 300, alpha: float = 0.28) -> float:
     """
-    Estimate engine Elo from ACPL and total clock time per player.
+    Estimate engine Elo from ACPL and total clock time per player using CCRL-style scaling.
     
     Parameters:
         acpl (float): Average centipawn loss at reference time.
         total_time_sec (float): Total clock time per player (seconds).
         ref_time_sec (float): Reference time for which ACPL was measured (default 300s).
-        alpha (float): Time-scaling exponent (default 0.4).
+        alpha (float): Time-scaling exponent (default 0.28 for CCRL population).
         
     Returns:
-        float: Estimated Elo.
+        float: Estimated Elo (CCRL-style).
     """
     # Scale ACPL based on available time
     acpl_effective = acpl * (ref_time_sec / total_time_sec) ** alpha
     
-    # Power-law mapping from ACPL to Elo
-    elo = 1300 + 9894 * acpl_effective ** -0.5
+    # Power-law mapping from ACPL to Elo (CCRL adjustments)
+    elo = 1250 + 9000 * acpl_effective ** -0.5
     return elo
-
 
 def train(
     model: torch.nn.Module,
