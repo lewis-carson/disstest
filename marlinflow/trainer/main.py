@@ -75,11 +75,13 @@ def train(
 
             if use_wandb:
                 epoch_loss = running_loss.item() / iterations
+                epoch_acpl = 4 * scale * (epoch_loss ** 0.5)
                 wandb.log(
                     {
                         "epoch": epoch,
                         "epoch_loss": epoch_loss,
-                        "epoch_acpl": 4 * scale * (epoch_loss ** 0.5),
+                        "epoch_acpl": epoch_acpl,
+                        "epoch_elo": 3600 - 20 * epoch_acpl,
                         "pos_per_s": fens / (time() - start_time),
                     }
                 )
@@ -127,10 +129,12 @@ def train(
                 train_log.save()
             
             if use_wandb:
+                acpl = 4 * scale * (loss ** 0.5)
                 wandb.log(
                     {
                         "loss": loss,
-                        "acpl": 4 * scale * (loss ** 0.5),
+                        "acpl": acpl,
+                        "elo": 3600 - 20 * acpl,
                         "global_step": iterations * batch.size,
                     }
                 )
