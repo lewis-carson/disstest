@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import pathlib
 
@@ -81,7 +82,7 @@ def train(
                         "epoch": epoch,
                         "epoch_loss": epoch_loss,
                         "epoch_acpl": epoch_acpl,
-                        "epoch_elo": 4600 - 18 * epoch_acpl,
+                        "epoch_elo": 2800 - 220 * math.log2(epoch_acpl),
                         "pos_per_s": fens / (time() - start_time),
                     }
                 )
@@ -134,7 +135,7 @@ def train(
                     {
                         "loss": loss,
                         "acpl": acpl,
-                        "elo": 4600 - 18 * acpl,
+                        "elo": 2800 - 220 * math.log2(acpl),
                         "global_step": iterations * batch.size,
                     }
                 )
