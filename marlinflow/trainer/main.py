@@ -74,10 +74,12 @@ def train(
             )
 
             if use_wandb:
+                epoch_loss = running_loss.item() / iterations
                 wandb.log(
                     {
                         "epoch": epoch,
-                        "epoch_loss": running_loss.item() / iterations,
+                        "epoch_loss": epoch_loss,
+                        "epoch_acpl": 4 * scale * (epoch_loss ** 0.5),
                         "pos_per_s": fens / (time() - start_time),
                     }
                 )
@@ -125,7 +127,13 @@ def train(
                 train_log.save()
             
             if use_wandb:
-                wandb.log({"loss": loss, "global_step": iterations * batch.size})
+                wandb.log(
+                    {
+                        "loss": loss,
+                        "acpl": 4 * scale * (loss ** 0.5),
+                        "global_step": iterations * batch.size,
+                    }
+                )
 
             iter_since_log = 0
             loss_since_log = torch.zeros((1,), device=DEVICE)
