@@ -158,7 +158,9 @@ def train(
                     {
                         "loss": loss,
                         "acpl": acpl,
-                        "elo": 1300 + 9894 * (1 / (acpl ** 0.5)),
+                        "elo_3m": acpl_to_elo(acpl, 180),
+                        "elo_15m": acpl_to_elo(acpl, 900),
+                        "elo_40m": acpl_to_elo(acpl, 2400),
                         "global_step": iterations * batch.size,
                     }
                 )
