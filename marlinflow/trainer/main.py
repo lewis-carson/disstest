@@ -132,7 +132,6 @@ def train(
                     json.dump(param_map, json_file)
 
         batch = fresh_batch
-        replay_entry = None
         if replay_buffer is not None:
             replay_buffer.add(fresh_batch)
             if (
@@ -140,12 +139,7 @@ def train(
                 and replay_buffer.can_sample(replay_min_batches)
                 and random.random() < replay_prob
             ):
-                replay_entry = replay_buffer.sample_entry()
-                batch = (
-                    replay_entry.batch
-                    if replay_entry.batch.stm_indices.device == DEVICE
-                    else replay_entry.batch.to_device(DEVICE)
-                )
+                batch = replay_buffer.sample_to_device(DEVICE)
                 replay_steps += 1
 
         optimizer.zero_grad()
@@ -157,13 +151,9 @@ def train(
         optimizer.step()
         model.apply(clipper)
 
-        loss_value = loss.item()
-
         with torch.no_grad():
             running_loss += loss
             loss_since_log += loss
-            if replay_entry is not None and replay_buffer is not None:
-                replay_buffer.update_priority(replay_entry, loss_value)
         iterations += 1
         iter_since_log += 1
         fens += batch.size
