@@ -38,6 +38,28 @@ class Batch:
     wdl: torch.Tensor
     size: int
 
+    def to_device(self, device: torch.device) -> Batch:
+        """Return a copy of the batch on the requested device."""
+        return Batch(
+            self.stm_indices.to(device, non_blocking=True),
+            self.nstm_indices.to(device, non_blocking=True),
+            self.values.to(device, non_blocking=True),
+            self.cp.to(device, non_blocking=True),
+            self.wdl.to(device, non_blocking=True),
+            self.size,
+        )
+
+    def detach_cpu(self) -> Batch:
+        """Detach tensors from the graph and store them on CPU for replay."""
+        return Batch(
+            self.stm_indices.detach().cpu(),
+            self.nstm_indices.detach().cpu(),
+            self.values.detach().cpu(),
+            self.cp.detach().cpu(),
+            self.wdl.detach().cpu(),
+            self.size,
+        )
+
 
 class BatchLoader:
     def __init__(

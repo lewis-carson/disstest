@@ -18,6 +18,15 @@ echo "GPU: $(nvidia-smi -L)"
 
 source .venv/bin/activate
 
-python -u marlinflow/trainer/main.py --data-root data/ --lr 0.001 --epochs 10 --scale 400 --wandb-project marlinflow --wandb-entity torvim
+python -u marlinflow/trainer/main.py \
+	--data-root data/01/train \
+	--train-id test-replay \
+	--lr 0.001 \
+	--epochs 5 \
+	--batch-size 16384 \
+	--scale 400 \
+	--replay-buffer-size 64 \
+	--replay-prob 0.25 \
+	--replay-min-batches 4
 
 echo "Training job completed at $(date)"

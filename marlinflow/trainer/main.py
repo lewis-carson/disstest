@@ -5,6 +5,7 @@ import json
 import math
 import os
 import pathlib
+import random
 
 from dataloader import BatchLoader
 from model import (
@@ -20,6 +21,7 @@ from time import time
 import torch
 from trainlog import TrainLog
 import wandb
+from replay import ReplayBuffer
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -69,6 +71,9 @@ def train(
     lr_drop: int | None = None,
     train_log: TrainLog | None = None,
     use_wandb: bool = False,
+    replay_buffer: ReplayBuffer | None = None,
+    replay_prob: float = 0.0,
+    replay_min_batches: int = 1,
 ) -> None:
     clipper = WeightClipper()
     running_loss = torch.zeros((1,), device=DEVICE)
@@ -81,8 +86,10 @@ def train(
     fens = 0
     epoch = 0
 
+    replay_steps = 0
+
     while epoch < epochs:
-        new_epoch, batch = dataloader.read_batch(DEVICE)
+        new_epoch, fresh_batch = dataloader.read_batch(DEVICE)
         if new_epoch:
             epoch += 1
             if epoch == lr_drop:
@@ -113,6 +120,7 @@ def train(
             start_time = time()
             iterations = 0
             fens = 0
+            replay_steps = 0
 
             if epoch % save_epochs == 0:
                 torch.save(model.state_dict(), f"nn/{train_id}_{epoch}")
@@ -123,6 +131,16 @@ def train(
                 with open(f"nn/{train_id}.json", "w") as json_file:
                     json.dump(param_map, json_file)
 
+        batch = fresh_batch
+        if replay_buffer is not None:
+            replay_buffer.add(fresh_batch)
+            if (
+                replay_prob > 0.0
+                and replay_buffer.can_sample(replay_min_batches)
+                and random.random() < replay_prob
+            ):
+                batch = replay_buffer.sample_to_device(DEVICE)
+                replay_steps += 1
 
         optimizer.zero_grad()
         prediction = model(batch)
@@ -142,9 +160,11 @@ def train(
 
         if iter_since_log * batch.size > LOG_ITERS:
             loss = loss_since_log.item() / iter_since_log
+            replay_ratio = replay_steps / iterations if iterations else 0.0
             print(
                 f"At {iterations * batch.size} positions",
                 f"Running Loss: {loss}",
+                f"Replay ratio: {replay_ratio:.2f}",
                 sep=os.linesep,
             )
             if train_log is not None:
@@ -196,6 +216,24 @@ def main():
     )
     parser.add_argument("--wandb-project", type=str, help="Wandb project name")
     parser.add_argument("--wandb-entity", type=str, help="Wandb entity name")
+    parser.add_argument(
+        "--replay-buffer-size",
+        type=int,
+        default=0,
+        help="How many past batches to keep for replay",
+    )
+    parser.add_argument(
+        "--replay-prob",
+        type=float,
+        default=0.0,
+        help="Probability of training on a replayed batch instead of a fresh one",
+    )
+    parser.add_argument(
+        "--replay-min-batches",
+        type=int,
+        default=1,
+        help="Minimum stored batches before replay can start",
+    )
 
     args = parser.parse_args()
 
@@ -223,6 +261,10 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    replay_buffer = None
+    if args.replay_buffer_size > 0:
+        replay_buffer = ReplayBuffer(args.replay_buffer_size)
+
     train(
         model,
         optimizer,
@@ -235,6 +277,9 @@ def main():
         lr_drop=args.lr_drop,
         train_log=train_log,
         use_wandb=args.wandb_project is not None,
+        replay_buffer=replay_buffer,
+        replay_prob=args.replay_prob,
+        replay_min_batches=args.replay_min_batches,
     )
 
 
