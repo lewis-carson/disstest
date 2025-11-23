@@ -81,7 +81,7 @@ def train(
                         "epoch": epoch,
                         "epoch_loss": epoch_loss,
                         "epoch_acpl": epoch_acpl,
-                        "epoch_elo": 3600 - 20 * epoch_acpl,
+                        "epoch_elo": 4600 - 18 * epoch_acpl,
                         "pos_per_s": fens / (time() - start_time),
                     }
                 )
@@ -134,7 +134,7 @@ def train(
                     {
                         "loss": loss,
                         "acpl": acpl,
-                        "elo": 3600 - 20 * acpl,
+                        "elo": 4600 - 18 * acpl,
                         "global_step": iterations * batch.size,
                     }
                 )
