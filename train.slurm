@@ -19,8 +19,7 @@ echo "GPU: $(nvidia-smi -L)"
 source .venv/bin/activate
 
 python -u marlinflow/trainer/main.py \
-	--data-root data/01/train \
-	--train-id test-replay \
+	--data-root data/ \
 	--lr 0.001 \
 	--epochs 5 \
 	--batch-size 16384 \
