@@ -24,3 +24,7 @@ fi
 # The user wrote "squeue train.slurm" but likely meant "sbatch train.slurm" to start it.
 echo "Submitting train.slurm..."
 sbatch train.slurm
+
+# 5. Check the queue
+echo "Checking queue..."
+squeue -u dhqq26
