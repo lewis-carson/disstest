@@ -27,6 +27,8 @@ python -u marlinflow/trainer/main.py \
 	--replay-buffer-size 64 \
 	--replay-prob 0.25 \
 	--replay-min-batches 4 \
+	--replay-priority-metric cp_abs_mean \
+	--replay-priority-eps 1e-6 \
     --wandb-project marlinflow \
     --wandb-entity torvim
 

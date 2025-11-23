@@ -234,6 +234,19 @@ def main():
         default=1,
         help="Minimum stored batches before replay can start",
     )
+    parser.add_argument(
+        "--replay-priority-metric",
+        type=str,
+        choices=["cp_norm", "cp_abs_mean", "cp_var"],
+        default=None,
+        help="Optional metric for prioritized replay sampling",
+    )
+    parser.add_argument(
+        "--replay-priority-eps",
+        type=float,
+        default=1e-6,
+        help="Floor added to computed priorities to keep them positive",
+    )
 
     args = parser.parse_args()
 
@@ -263,7 +276,12 @@ def main():
 
     replay_buffer = None
     if args.replay_buffer_size > 0:
-        replay_buffer = ReplayBuffer(args.replay_buffer_size, DEVICE)
+        replay_buffer = ReplayBuffer(
+            args.replay_buffer_size,
+            DEVICE,
+            priority_metric=args.replay_priority_metric,
+            priority_eps=args.replay_priority_eps,
+        )
 
     train(
         model,
