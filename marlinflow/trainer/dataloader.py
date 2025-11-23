@@ -60,6 +60,17 @@ class Batch:
             self.size,
         )
 
+    def detach_clone(self) -> Batch:
+        """Detach tensors and clone them on their current device."""
+        return Batch(
+            self.stm_indices.detach().clone(),
+            self.nstm_indices.detach().clone(),
+            self.values.detach().clone(),
+            self.cp.detach().clone(),
+            self.wdl.detach().clone(),
+            self.size,
+        )
+
 
 class BatchLoader:
     def __init__(

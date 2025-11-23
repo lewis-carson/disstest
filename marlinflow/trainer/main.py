@@ -263,7 +263,7 @@ def main():
 
     replay_buffer = None
     if args.replay_buffer_size > 0:
-        replay_buffer = ReplayBuffer(args.replay_buffer_size)
+        replay_buffer = ReplayBuffer(args.replay_buffer_size, DEVICE)
 
     train(
         model,
