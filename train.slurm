@@ -26,6 +26,8 @@ python -u marlinflow/trainer/main.py \
 	--scale 400 \
 	--replay-buffer-size 64 \
 	--replay-prob 0.25 \
-	--replay-min-batches 4
+	--replay-min-batches 4 \
+    --wandb-project marlinflow \
+    --wandb-entity torvim
 
 echo "Training job completed at $(date)"
