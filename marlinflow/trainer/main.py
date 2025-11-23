@@ -37,7 +37,7 @@ class WeightClipper:
             module.weight.data = w
 
 
-def acpl_to_elo_ccrl(acpl: float, total_time_sec: float, ref_time_sec: float = 300, alpha: float = 0.28) -> float:
+def acpl_to_elo(acpl: float, total_time_sec: float, ref_time_sec: float = 300, alpha: float = 0.28) -> float:
     """
     Estimate engine Elo from ACPL and total clock time per player using CCRL-style scaling.
     
