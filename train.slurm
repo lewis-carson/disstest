@@ -18,7 +18,7 @@ echo "GPU: $(nvidia-smi -L)"
 
 source .venv/bin/activate
 
-python -u marlinflow/trainer/main.py \
+python -u trainer/main.py \
 	--data-root data/ \
 	--lr 0.001 \
 	--epochs 5 \
