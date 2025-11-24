@@ -19,7 +19,6 @@ from model import (
 from time import time
 
 import torch
-from trainlog import TrainLog
 import wandb
 from replay import ReplayBuffer
 
@@ -69,7 +68,6 @@ def train(
     save_epochs: int,
     train_id: str,
     lr_drop: int | None = None,
-    train_log: TrainLog | None = None,
     use_wandb: bool = False,
     replay_buffer: ReplayBuffer | None = None,
     replay_prob: float = 0.0,
@@ -167,10 +165,6 @@ def train(
                 f"Replay ratio: {replay_ratio:.2f}",
                 sep=os.linesep,
             )
-            if train_log is not None:
-                train_log.update(loss)
-                train_log.save()
-            
             if use_wandb:
                 acpl = 4 * scale * (loss ** 0.5)
                 wandb.log(
@@ -264,8 +258,6 @@ def main():
     if args.train_id is None:
         args.train_id = str(int(time()))
 
-    train_log = TrainLog(args.train_id)
-
     model = NnHalfKPCuda(256).to(DEVICE)
 
     data_path = pathlib.Path(args.data_root)
@@ -293,7 +285,6 @@ def main():
         args.save_epochs,
         args.train_id,
         lr_drop=args.lr_drop,
-        train_log=train_log,
         use_wandb=args.wandb_project is not None,
         replay_buffer=replay_buffer,
         replay_prob=args.replay_prob,
